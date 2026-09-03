@@ -1,14 +1,33 @@
 import './globals.css';
 
+const SITE_URL = 'https://mimshakim.com';
+
 export const metadata = {
-  title: '\u05DE\u05DE\u05E9\u05E7\u05D9\u05DD \u2014 \u05E1\u05D5\u05DB\u05E0\u05D9 AI \u05E7\u05D5\u05DC\u05D9\u05D9\u05DD \u05DC\u05DE\u05E8\u05E4\u05D0\u05D5\u05EA',
-  description: '\u05E1\u05D5\u05DB\u05E0\u05D9 AI \u05D7\u05DB\u05DE\u05D9\u05DD \u05E9\u05DE\u05E0\u05D4\u05DC\u05D9\u05DD \u05D0\u05EA \u05D4\u05EA\u05D5\u05E8\u05D9\u05DD, \u05E2\u05D5\u05E0\u05D9\u05DD \u05DC\u05DC\u05E7\u05D5\u05D7\u05D5\u05EA \u05D5\u05DE\u05E1\u05E0\u05DB\u05E8\u05E0\u05D9\u05DD \u05D4\u05DB\u05DC \u05D9\u05E9\u05D9\u05E8\u05D5\u05EA \u05DC\u05D9\u05D5\u05DE\u05DF.',
+  metadataBase: new URL(SITE_URL),
+  title: 'ממשקים | מענה קולי חכם AI לשירות לקוחות 24/7',
+  description:
+    'סוכן קולי AI בעברית שעונה לכל שיחה 24/7: קובע תורים, מברר, מעדכן ומעביר לנציג רק כשצריך. מזכירה וירטואלית לעסק עם קביעת תורים אוטומטית — דברו עם הסוכן עכשיו מהדפדפן.',
+  keywords: [
+    'מענה קולי חכם',
+    'סוכן קולי AI',
+    'מוקד טלפוני AI',
+    'בוט קולי בעברית',
+    'מזכירה וירטואלית לעסק',
+    'קביעת תורים אוטומטית',
+  ],
   icons: { icon: '/favicon.ico' },
+  alternates: {
+    canonical: '/',
+    // Add `en: '/en'` alongside this once the English page ships — declaring an
+    // hreflang for a route that 404s hurts more than the missing pair does.
+    languages: { he: '/' },
+  },
   openGraph: {
-    title: '\u05DE\u05DE\u05E9\u05E7\u05D9\u05DD \u2014 \u05D4\u05DE\u05D4\u05E4\u05DB\u05D4 \u05D4\u05E7\u05D5\u05DC\u05D9\u05EA \u05E9\u05DC \u05D4\u05DE\u05E8\u05E4\u05D0\u05D4 \u05E9\u05DC\u05DA',
-    description: '\u05E1\u05D5\u05DB\u05E0\u05D9 AI \u05D7\u05DB\u05DE\u05D9\u05DD \u05E9\u05DE\u05E0\u05D4\u05DC\u05D9\u05DD \u05D0\u05EA \u05D4\u05EA\u05D5\u05E8\u05D9\u05DD.',
-    url: 'https://mimshakim.com',
-    siteName: '\u05DE\u05DE\u05E9\u05E7\u05D9\u05DD',
+    title: 'ממשקים | מענה קולי חכם AI לשירות לקוחות 24/7',
+    description:
+      'בוט קולי בעברית שמנהל שיחות שירות אמיתיות: קובע תורים, מברר, מעדכן — ומעביר לנציג רק כשבאמת צריך.',
+    url: SITE_URL,
+    siteName: 'ממשקים',
     locale: 'he_IL',
     type: 'website',
   },
@@ -20,11 +39,12 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;900&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body style={{ fontFamily: "'Heebo', sans-serif" }}>
-        {children}
-      </body>
+      <body className="bg-cream font-sans text-navy antialiased">{children}</body>
     </html>
   );
-    }
+}

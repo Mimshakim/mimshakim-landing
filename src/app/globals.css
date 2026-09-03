@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* The design reference sets no root line-height, so text boxes size on the
+     font's natural leading. Tailwind's preflight would otherwise force 1.5 and
+     grow every button/label by a few px. Explicit leading-* utilities still win. */
+  html,
+  body {
+    line-height: normal;
+  }
+  body {
+    margin: 0;
+    background: #faf8f4;
+  }
+  a {
+    color: #0d1f3c;
+  }
+  a:hover {
+    color: #00a8c6;
+  }
+}
