@@ -113,14 +113,6 @@ export function CallProvider({ children }) {
 
     setPhase('connecting');
     try {
-      // Claim a slot before touching the mic or Vapi, so a throttled visitor
-      // never sees a permission prompt for a call that will not happen.
-      const permit = await requestPermit();
-      if (!permit.ok) {
-        setPhase('idle');
-        setNotice(permit.message);
-        return;
-      }
 
       // Ask for the mic ourselves so a denial surfaces as a real error we can
       // explain — Vapi swallows it and would leave us connecting forever.
@@ -187,27 +179,6 @@ export function useCall() {
   const ctx = useContext(CallContext);
   if (!ctx) throw new Error('useCall must be used inside <CallProvider>');
   return ctx;
-}
-
-/**
- * Asks the server whether this visitor may start another demo call.
- * Deliberately fails open — a limiter outage must not take the page's main
- * call-to-action down with it.
- */
-async function requestPermit() {
-  try {
-    const res = await fetch('/api/call-permit', { method: 'POST', cache: 'no-store' });
-    if (res.status === 429) {
-      const body = await res.json().catch(() => ({}));
-      return {
-        ok: false,
-        message: body.message || 'הגעתם למכסת שיחות ההדגמה לשעה. נסו שוב מאוחר יותר או קבעו הדגמה.',
-      };
-    }
-    return { ok: true };
-  } catch {
-    return { ok: true };
-  }
 }
 
 function formatTimer(seconds) {

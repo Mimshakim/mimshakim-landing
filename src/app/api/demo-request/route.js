@@ -5,12 +5,17 @@ export const runtime = 'nodejs';
 const REQUIRED = ['name', 'company', 'phone', 'email'];
 
 /**
- * Demo requests land wherever the environment points them:
- *   DEMO_WEBHOOK_URL  — any inbox that accepts JSON (Make/Zapier/n8n/Slack).
- *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (+ optional DEMO_TABLE)
- *                     — inserted straight into Postgres via PostgREST.
+ * Demo requests are relayed straight to whoever is going to answer them.
+ *
+ *   DEMO_SLACK_WEBHOOK_URL — a Slack incoming webhook (the usual sink).
+ *   DEMO_WEBHOOK_URL       — any other JSON endpoint (Make / Zapier / n8n).
+ *
  * Configure at least one. With neither, the route refuses the submission
- * rather than accepting a lead it cannot store.
+ * rather than accepting a lead it cannot deliver — a visitor seeing an error
+ * is recoverable; a lead silently dropped is not.
+ *
+ * Deliberately no database: this page's stack is GitHub -> Vercel -> domain,
+ * and a public marketing page should not hold credentials to one.
  */
 export async function POST(request) {
   let body;
@@ -40,11 +45,8 @@ export async function POST(request) {
   };
 
   const sinks = [];
-  if (process.env.DEMO_WEBHOOK_URL) sinks.push(sendToWebhook(lead));
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) sinks.push(sendToSupabase(lead));
-  // Storing a lead nobody looks at is the same as losing it, so the Slack ping
-  // rides alongside the durable write rather than replacing it.
   if (process.env.DEMO_SLACK_WEBHOOK_URL) sinks.push(sendToSlack(lead));
+  if (process.env.DEMO_WEBHOOK_URL) sinks.push(sendToWebhook(lead));
 
   if (!sinks.length) {
     console.error('[demo-request] no sink configured; lead dropped', lead.email);
@@ -58,15 +60,6 @@ export async function POST(request) {
   }
 
   return NextResponse.json({ ok: true });
-}
-
-async function sendToWebhook(lead) {
-  const res = await fetch(process.env.DEMO_WEBHOOK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(lead),
-  });
-  if (!res.ok) throw new Error(`webhook ${res.status}`);
 }
 
 async function sendToSlack(lead) {
@@ -87,17 +80,11 @@ async function sendToSlack(lead) {
   if (!res.ok) throw new Error(`slack ${res.status}`);
 }
 
-async function sendToSupabase(lead) {
-  const table = process.env.DEMO_TABLE || 'demo_requests';
-  const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${table}`, {
+async function sendToWebhook(lead) {
+  const res = await fetch(process.env.DEMO_WEBHOOK_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-      Prefer: 'return=minimal',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(lead),
   });
-  if (!res.ok) throw new Error(`supabase ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`webhook ${res.status}`);
 }
