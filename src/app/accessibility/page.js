@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 const UPDATED = '3 בספטמבר 2026';
-const CONTACT_EMAIL = 'info@mimshakim.com';
+const CONTACT_EMAIL = 'adam@mimshakim.com';
 
 export default function AccessibilityPage() {
   return (
