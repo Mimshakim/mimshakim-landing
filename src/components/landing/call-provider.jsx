@@ -25,7 +25,25 @@ const CONNECT_TIMEOUT_MS = 20000;
 // heard what the agent sounds like.
 const MAX_CALL_MS = 3 * 60 * 1000;
 
-export function CallProvider({ children }) {
+const DEFAULT_MESSAGES = {
+  notConfigured: 'השיחה החיה אינה מוגדרת כרגע. נסו שוב מאוחר יותר או קבעו הדגמה.',
+  timeout: 'החיבור לסוכן לא הושלם. בדקו את החיבור לאינטרנט ונסו שוב.',
+  maxDuration: 'שיחת ההדגמה מוגבלת ל־3 דקות. לשיחה מלאה — קבעו הדגמה.',
+  mic: 'לא קיבלנו גישה למיקרופון. אשרו את ההרשאה בדפדפן ונסו שוב.',
+  noDevice: 'לא נמצא מיקרופון זמין במכשיר.',
+  generic: 'לא הצלחנו לפתוח את השיחה. נסו שוב בעוד רגע.',
+};
+
+/**
+ * `messages` overrides the user-facing notices (the v2 English page passes its
+ * own). `onCallStart` fires once per call that actually connects (analytics).
+ */
+export function CallProvider({ children, messages = DEFAULT_MESSAGES, onCallStart }) {
+  const msgRef = useRef(messages);
+  msgRef.current = messages;
+  const onStartRef = useRef(onCallStart);
+  onStartRef.current = onCallStart;
+
   const [phase, setPhase] = useState('idle');
   const [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false);
@@ -64,13 +82,14 @@ export function CallProvider({ children }) {
       setNotice('');
       setSeconds(0);
       setPhase('live');
+      onStartRef.current?.();
       clearTimer();
       tickRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
       maxDurationRef.current = setTimeout(() => {
         vapiRef.current?.stop();
         clearTimer();
         setPhase('ended');
-        setNotice('שיחת ההדגמה מוגבלת ל־3 דקות. לשיחה מלאה — קבעו הדגמה.');
+        setNotice(msgRef.current.maxDuration);
       }, MAX_CALL_MS);
     });
 
@@ -90,7 +109,7 @@ export function CallProvider({ children }) {
     vapi.on('error', (err) => {
       clearTimer();
       setPhase('idle');
-      setNotice(readableError(err));
+      setNotice(readableError(err, msgRef.current));
     });
 
     vapiRef.current = vapi;
@@ -107,7 +126,7 @@ export function CallProvider({ children }) {
     setNotice('');
 
     if (!PUBLIC_KEY || !ASSISTANT_ID) {
-      setNotice('השיחה החיה אינה מוגדרת כרגע. נסו שוב מאוחר יותר או קבעו הדגמה.');
+      setNotice(msgRef.current.notConfigured);
       return;
     }
 
@@ -125,14 +144,14 @@ export function CallProvider({ children }) {
       connectTimeoutRef.current = setTimeout(() => {
         vapiRef.current?.stop();
         setPhase((p) => (p === 'connecting' ? 'idle' : p));
-        setNotice('החיבור לסוכן לא הושלם. בדקו את החיבור לאינטרנט ונסו שוב.');
+        setNotice(msgRef.current.timeout);
       }, CONNECT_TIMEOUT_MS);
 
       await vapi.start(ASSISTANT_ID);
     } catch (err) {
       clearTimer();
       setPhase('idle');
-      setNotice(readableError(err));
+      setNotice(readableError(err, msgRef.current));
     }
   }, [phase, clearTimer, getVapi]);
 
@@ -185,14 +204,14 @@ function formatTimer(seconds) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
-function readableError(err) {
+function readableError(err, m = DEFAULT_MESSAGES) {
   const raw =
     typeof err === 'string' ? err : `${err?.name || ''} ${err?.error?.message || err?.message || ''}`;
   if (/permission|denied|notallowed|dismissed/i.test(raw)) {
-    return 'לא קיבלנו גישה למיקרופון. אשרו את ההרשאה בדפדפן ונסו שוב.';
+    return m.mic;
   }
   if (/notfound|notreadable|no.*device|overconstrained/i.test(raw)) {
-    return 'לא נמצא מיקרופון זמין במכשיר.';
+    return m.noDevice;
   }
-  return 'לא הצלחנו לפתוח את השיחה. נסו שוב בעוד רגע.';
+  return m.generic;
 }

@@ -6,7 +6,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Design tokens — design_handoff_voice_landing/README.md
+        // v2 "Apple-clean" tokens (design canvas 99vwZyveGSqJPeFSBE7vRD)
+        site: {
+          white: '#FFFFFF',
+          gray: '#F5F5F7',
+          text: '#1D1D1F',
+          text2: '#6E6E73',
+        },
+        link: '#0F7A6A',
+        teal: { DEFAULT: '#14A08B', tint: '#E2F3EF' },
+        sidebar: '#0E3B37',
+        orange: { DEFAULT: '#C2501F', text: '#B2481B', tint: '#FCEDE6' },
+        // v1 tokens, still used by /demo internals, /accessibility and the old components.
         cream: '#FAF8F4',
         navy: '#0D1F3C',
         brand: {
@@ -24,7 +35,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Rubik', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-heebo)', 'Heebo', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         hard: '4px 4px 0 #0D1F3C',
