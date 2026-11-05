@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
+import { validateLead } from '@/lib/demo-lead';
 
 export const runtime = 'nodejs';
-
-const REQUIRED = ['name', 'company', 'phone', 'email'];
 
 /**
  * Demo requests are relayed straight to whoever is going to answer them.
@@ -25,24 +24,13 @@ export async function POST(request) {
     return NextResponse.json({ error: 'invalid-json' }, { status: 400 });
   }
 
-  const missing = REQUIRED.filter((f) => !String(body?.[f] || '').trim());
-  if (missing.length) {
-    return NextResponse.json({ error: `missing:${missing.join(',')}` }, { status: 400 });
-  }
-  if (!body.consent) {
-    return NextResponse.json({ error: 'missing:consent' }, { status: 400 });
+  // Same rules as the form (src/lib/demo-lead.js), so a bypassed client can't send junk.
+  const { errors, clean } = validateLead(body);
+  if (Object.keys(errors).length) {
+    return NextResponse.json({ error: 'invalid', fields: errors }, { status: 400 });
   }
 
-  const lead = {
-    name: String(body.name).trim().slice(0, 200),
-    company: String(body.company).trim().slice(0, 200),
-    phone: String(body.phone).trim().slice(0, 40),
-    email: String(body.email).trim().slice(0, 200),
-    industry: String(body.industry || '').trim().slice(0, 100) || null,
-    notes: String(body.notes || '').trim().slice(0, 2000) || null,
-    source: 'landing',
-    created_at: new Date().toISOString(),
-  };
+  const lead = { ...clean, source: 'landing', created_at: new Date().toISOString() };
 
   const sinks = [];
   if (process.env.DEMO_SLACK_WEBHOOK_URL) sinks.push(sendToSlack(lead));
