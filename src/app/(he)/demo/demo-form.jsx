@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { trackEvent } from '@/components/landing-v2/client';
 
 const INDUSTRIES = [
-  'מוקד טלפוני',
+  'מרפאת שיניים',
   'מרפאה / בריאות',
+  'מוקד טלפוני',
   'ביטוח',
   'נדל"ן',
   'מסחר אונליין',
@@ -12,8 +14,8 @@ const INDUSTRIES = [
 ];
 
 const FIELD =
-  'w-full rounded-[4px] border-2 border-navy bg-white px-4 py-3 text-[15px] outline-none focus:border-brand-cyan-text';
-const LABEL = 'mb-2 block text-[13px] font-extrabold tracking-[1px] text-brand-cyan-text';
+  'w-full rounded-xl border border-[#D2D2D7] bg-white px-4 py-3 text-[16px] text-site-text outline-none focus:border-link focus:ring-2 focus:ring-teal-tint';
+const LABEL = 'mb-2 block text-[14px] font-semibold text-site-text';
 
 export default function DemoForm() {
   const [status, setStatus] = useState('idle'); // idle | sending | sent | error
@@ -37,24 +39,25 @@ export default function DemoForm() {
         throw new Error(body.error || 'request-failed');
       }
       setStatus('sent');
+      trackEvent('demo_submit', { industry: payload.industry || 'none' });
       form.reset();
     } catch (err) {
       setStatus('error');
-      setError('לא הצלחנו לשלוח את הפנייה. נסו שוב, או כתבו לנו ל-hello@mimshakim.com.');
+      setError('לא הצלחנו לשלוח את הפנייה. נסו שוב, או כתבו לנו ל-adam@mimshakim.com.');
     }
   }
 
   if (status === 'sent') {
     return (
-      <div className="border-2 border-navy bg-white p-10 text-center shadow-hard-cyan">
-        <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-brand-success bg-[rgba(43,224,128,.15)] text-[30px] text-brand-success">
+      <div role="status" className="rounded-[18px] bg-site-gray p-10 text-center">
+        <div className="mx-auto mb-5 flex h-[64px] w-[64px] items-center justify-center rounded-full bg-teal text-[28px] text-white" aria-hidden="true">
           ✓
         </div>
-        <div className="mb-3 text-[24px] font-black tracking-[-1px]">קיבלנו. נחזור אליכם.</div>
-        <p className="m-0 text-[16px] leading-[1.6] text-brand-muted">
-          ניצור קשר תוך יום עסקים אחד לתיאום הדגמה של 15 דקות על תרחיש אמיתי מהעסק שלכם.
+        <div className="mb-3 text-[26px] font-bold">קיבלנו. נחזור אליכם.</div>
+        <p className="m-0 text-[17px] leading-[1.6] text-site-text2">
+          ניצור קשר תוך יום עסקים אחד לתיאום הדגמה של 15 דקות על תרחיש אמיתי מהמרפאה שלכם.
         </p>
-        <a href="/" className="mt-6 inline-block text-[14px] font-bold underline">
+        <a href="/" className="mt-6 inline-block text-[15px]">
           חזרה לדף הבית
         </a>
       </div>
@@ -62,7 +65,7 @@ export default function DemoForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="border-2 border-navy bg-white p-8 shadow-hard-cyan md:p-10">
+    <form onSubmit={onSubmit} className="rounded-[18px] bg-site-gray p-6 text-start md:p-10">
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div>
           <label className={LABEL} htmlFor="name">שם מלא *</label>
@@ -94,13 +97,13 @@ export default function DemoForm() {
       </div>
 
       {/* Explicit opt-in — Israeli anti-spam law (תיקון 40 לחוק התקשורת). */}
-      <label className="mt-6 flex items-start gap-3 text-[14px] leading-[1.55] text-brand-muted">
-        <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 flex-none accent-[#00C2E0]" />
+      <label className="mt-6 flex items-start gap-3 text-[14px] leading-[1.55] text-site-text2">
+        <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 flex-none accent-[#0F7A6A]" />
         <span>אני מאשר/ת שתיצרו איתי קשר בטלפון, במייל או ב-WhatsApp לגבי ההדגמה.</span>
       </label>
 
       {status === 'error' && (
-        <div role="alert" className="mt-5 rounded-[4px] border-2 border-brand-danger bg-brand-danger/10 px-4 py-3 text-[14px]">
+        <div role="alert" className="mt-5 rounded-xl border border-orange bg-orange-tint px-4 py-3 text-[14px] text-orange-text">
           {error}
         </div>
       )}
@@ -108,9 +111,9 @@ export default function DemoForm() {
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="mt-7 rounded-[4px] bg-brand-cyan px-[34px] py-4 text-[17px] font-black text-navy shadow-hard disabled:opacity-60"
+        className="v2-btn mt-7 cursor-pointer border-0 disabled:opacity-60"
       >
-        {status === 'sending' ? 'שולחים…' : 'שלחו ונתאם הדגמה ←'}
+        {status === 'sending' ? 'שולחים…' : 'שלחו ונתאם הדגמה'}
       </button>
     </form>
   );
