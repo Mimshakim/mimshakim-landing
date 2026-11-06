@@ -8,7 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@vapi-ai/web": "^2.7.0",
+    "@vapi-ai/web": "^3.1.0",
     "@vercel/analytics": "^2.0.1",
     "next": "^14.2.35",
     "react": "^18.3.1",
